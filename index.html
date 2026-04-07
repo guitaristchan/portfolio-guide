@@ -7,41 +7,24 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <style>
         body { margin: 0; padding: 0; background-color: transparent; overflow: hidden; font-family: sans-serif; }
-        
-        /* 1. 슬라이더 (가장 뒤) */
         .swiper { width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; z-index: 1; }
         .swiper-slide img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* 2. 입력창 영역 (가장 앞) */
+        /* 입력창 영역 - 최상단으로 올림 */
         #chat-box {
             position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-            /* z-index를 최대로 높여서 어떤 것보다 위에 있게 함 */
             z-index: 999999 !important; 
             display: flex; gap: 10px;
             background: rgba(255, 255, 255, 0.95); padding: 12px;
-            border-radius: 12px; box-shadow: 0 4px 25px rgba(0,0,0,0.5);
+            border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.4);
             width: 85%; max-width: 450px; 
-            /* 클릭이 가능하도록 강제 설정 */
-            pointer-events: all !important;
-            cursor: auto;
+            pointer-events: auto !important;
         }
-        #chat-box input { 
-            flex: 1; border: 1px solid #ccc; padding: 12px; border-radius: 6px; 
-            outline: none; font-size: 16px; position: relative; z-index: 1000000;
-        }
-        #chat-box button { 
-            background: #007aff; color: white; border: none; padding: 10px 20px; 
-            border-radius: 6px; cursor: pointer; font-weight: bold; 
-            position: relative; z-index: 1000000;
-        }
+        #chat-box input { flex: 1; border: 1px solid #ccc; padding: 12px; border-radius: 6px; outline: none; font-size: 16px; }
+        #chat-box button { background: #007aff; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
         
-        /* 3. 버튜버 위젯 (중간 레이어) */
-        #live2d-widget { 
-            /* 중요: 위젯 자체가 클릭을 가로막지 못하게 함 */
-            pointer-events: none !important; 
-        }
-        /* 위젯 내부의 캔버스 요소도 클릭 무시하도록 설정 */
-        canvas#live2dcanvas { pointer-events: none !important; }
+        /* 버튜버 클릭 방지 */
+        #live2d-widget { pointer-events: none !important; }
     </style>
 </head>
 <body>
@@ -52,12 +35,12 @@
             <div class="swiper-slide"><img src="https://via.placeholder.com/800x1200?text=사진2:+학생회+활동"></div>
             <div class="swiper-slide"><img src="https://via.placeholder.com/800x1200?text=사진3:+IT+프로젝트"></div>
         </div>
-        <div class="swiper-button-next" style="color:white; z-index: 10;"></div>
-        <div class="swiper-button-prev" style="color:white; z-index: 10;"></div>
+        <div class="swiper-button-next" style="color:white;"></div>
+        <div class="swiper-button-prev" style="color:white;"></div>
     </div>
 
     <div id="chat-box">
-        <input type="text" id="userInput" placeholder="대학교 어디야?" />
+        <input type="text" id="userInput" placeholder="대학교 어디야? (입력 후 클릭)" />
         <button type="button" id="sendBtn">질문</button>
     </div>
 
@@ -65,15 +48,15 @@
     <script src="https://cdn.jsdelivr.net/npm/live2d-widget@3.1.4/lib/L2Dwidget.min.js"></script>
 
     <script>
-        // 버튜버 초기화
+        // 1. 버튜버 초기화
         L2Dwidget.init({
             "model": { "jsonPath": "https://cdn.jsdelivr.net/gh/evrstr/live2d-widget-models/live2d_evrstr/koharu/model.json" },
             "display": { "position": "right", "width": 150, "height": 300, "hOffset": 10, "vOffset": 0 },
             "mobile": { "show": true },
-            "dialog": { "enable": true }
+            "dialog": { "enable": true, "script": { 'every idle 10s': '$hitokoto$', 'tap face': '안녕!', 'tap body': '휘찬님 화이팅!' } }
         });
 
-        // 슬라이더 설정
+        // 2. 슬라이더 설정
         const infoTexts = ["🎻 서울대 음대 공연 모습!", "💼 학생회 활동 경험!", "💻 IT 융합 프로젝트!"];
         const swiper = new Swiper('.swiper', {
             loop: true,
@@ -81,28 +64,28 @@
             on: { slideChangeTransitionEnd: function() { L2Dwidget.showTextMessage(infoTexts[this.realIndex], 3000); } }
         });
 
-        // 질문 기능
-        const sendBtn = document.getElementById('sendBtn');
-        const userInput = document.getElementById('userInput');
-
-        function ask() {
-            const val = userInput.value.trim();
+        // 3. 질문 기능 (가장 확실한 클릭 이벤트 등록 방식)
+        document.getElementById('sendBtn').addEventListener('click', function() {
+            const val = document.getElementById('userInput').value;
             if(!val) return;
 
-            let response = `'${val}'에 대해서는 아직 공부 중이에요!`;
+            let response = `'${val}'에 대해서는 아직 학습 중이에요!`;
             
             if(val.includes("대학") || val.includes("학교")) {
-                response = "휘찬님은 **서울대학교 음악대학**에 재학 중입니다! 🎓";
+                response = "휘찬님은 **서울대학교 음악대학** 재학생입니다! 🎓";
             } else if(val.includes("전공")) {
                 response = "현재 **현악**을 전공하고 있어요! 🎻";
             }
 
+            // 말풍선 띄우기
             L2Dwidget.showTextMessage(response, 5000);
-            userInput.value = "";
-        }
+            document.getElementById('userInput').value = "";
+        });
 
-        sendBtn.addEventListener('click', ask);
-        userInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') ask(); });
+        // 엔터키 지원
+        document.getElementById('userInput').addEventListener('keypress', function(e) {
+            if(e.key === 'Enter') document.getElementById('sendBtn').click();
+        });
     </script>
 </body>
 </html>
