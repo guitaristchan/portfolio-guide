@@ -8,37 +8,29 @@
     <style>
         body { margin: 0; padding: 0; background-color: transparent; overflow: hidden; font-family: sans-serif; }
         
-        /* 1. 이미지 슬라이더 (가장 뒤) */
+        /* 슬라이더 (배경) */
         .swiper { width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; z-index: 1; }
         .swiper-slide img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* 2. 질문 입력창 (가장 앞으로!) */
+        /* 입력창 영역 - 버튼을 없애고 입력창만 길게 배치 */
         #chat-box {
             position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-            /* z-index를 극한으로 높여서 버튜버 투명 막보다 무조건 위로 올림 */
             z-index: 999999999 !important; 
-            display: flex; gap: 10px;
+            display: flex; 
             background: rgba(255, 255, 255, 0.95); padding: 12px;
-            border-radius: 15px; box-shadow: 0 8px 30px rgba(0,0,0,0.5);
-            width: 85%; max-width: 450px; 
-            /* 클릭 이벤트를 강제로 활성화 */
+            border-radius: 25px; box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+            width: 80%; max-width: 400px; 
             pointer-events: auto !important;
         }
         
         #chat-box input { 
-            flex: 1; border: 1px solid #ccc; padding: 12px; border-radius: 8px; 
-            outline: none; font-size: 16px; 
-        }
-        
-        #chat-box button { 
-            background: #007aff; color: white; border: none; padding: 10px 20px; 
-            border-radius: 8px; cursor: pointer; font-weight: bold; 
+            flex: 1; border: none; padding: 10px 15px; border-radius: 20px; 
+            outline: none; font-size: 16px; background: transparent;
+            text-align: center; /* 입력창 중앙 정렬로 더 깔끔하게 */
         }
 
-        /* 3. 버튜버 위젯 (중간 레이어) - 클릭이 관통되게 설정 */
-        #live2d-widget, #live2dcanvas { 
-            pointer-events: none !important; 
-        }
+        /* 버튜버 위젯 클릭 관통 설정 */
+        #live2d-widget, #live2dcanvas { pointer-events: none !important; }
     </style>
 </head>
 <body>
@@ -54,15 +46,14 @@
     </div>
 
     <div id="chat-box">
-        <input type="text" id="userInput" placeholder="대학교 어디야?" />
-        <button type="button" id="sendBtn">질문</button>
+        <input type="text" id="userInput" placeholder="질문 후 엔터를 누르세요!" autocomplete="off" />
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/live2d-widget@3.1.4/lib/L2Dwidget.min.js"></script>
 
     <script>
-        // 버튜버 초기설정
+        // 버튜버 초기화
         L2Dwidget.init({
             "model": { "jsonPath": "https://cdn.jsdelivr.net/gh/evrstr/live2d-widget-models/live2d_evrstr/koharu/model.json" },
             "display": { "position": "right", "width": 150, "height": 300, "hOffset": 10, "vOffset": 0 },
@@ -72,40 +63,35 @@
 
         // 슬라이더 텍스트
         const descriptions = ["🎻 서울대 음대 기악과 공연!", "💼 학생회 사무부국장 활동!", "💻 IT 융합 프로젝트!"];
-        
         const swiper = new Swiper('.swiper', {
             loop: true,
             navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
-            on: { 
-                slideChangeTransitionEnd: function() { 
-                    L2Dwidget.showTextMessage(descriptions[this.realIndex], 3000); 
-                } 
-            }
+            on: { slideChangeTransitionEnd: function() { L2Dwidget.showTextMessage(descriptions[this.realIndex], 3000); } }
         });
 
-        // 질문 로직
-        const btn = document.getElementById('sendBtn');
+        // 엔터키 입력 로직
         const input = document.getElementById('userInput');
 
-        function handleAsk() {
-            const query = input.value.trim();
-            if(!query) return;
+        input.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const query = input.value.trim();
+                if(!query) return;
 
-            let reply = `'${query}'는 아직 잘 모르겠어요!`;
-            
-            if(query.includes("대학") || query.includes("학교")) {
-                reply = "휘찬님은 **서울대학교 음악대학**에 재학 중이에요! 🎓";
-            } else if(query.includes("전공")) {
-                reply = "현재 **현악**을 전공하고 있습니다! 🎻";
+                let reply = `'${query}'에 대해 궁금하시군요!`;
+                
+                if(query.includes("대학") || query.includes("학교")) {
+                    reply = "휘찬님은 **서울대학교 음악대학**에 재학 중입니다! 🎓";
+                } else if(query.includes("전공") || query.includes("악기")) {
+                    reply = "현재 **현악**을 전공하고 있어요! 🎻";
+                } else if(query.includes("학생회")) {
+                    reply = "음대 학생회 **사무부국장**으로 활동했습니다! 💼";
+                }
+
+                L2Dwidget.showTextMessage(reply, 5000);
+                input.value = ""; // 입력 후 창 비우기
+                input.blur(); // 모바일 키보드 내리기
             }
-
-            L2Dwidget.showTextMessage(reply, 5000);
-            input.value = "";
-        }
-
-        // 버튼 클릭 및 엔터키 연결
-        btn.addEventListener('click', handleAsk);
-        input.addEventListener('keypress', (e) => { if(e.key === 'Enter') handleAsk(); });
+        });
     </script>
 </body>
 </html>
