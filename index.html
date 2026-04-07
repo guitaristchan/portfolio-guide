@@ -3,92 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>휘찬의 포트폴리오 도슨트</title>
+    <title>휘찬의 AI 포트폴리오</title>
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-    
     <style>
-        body { margin: 0; padding: 0; background-color: transparent; overflow: hidden; font-family: 'Pretendard', sans-serif; }
+        body { margin: 0; padding: 0; background-color: transparent; overflow: hidden; font-family: sans-serif; }
         
-        /* 슬라이더 전체 크기 */
-        .swiper { width: 100vw; height: 100vh; }
+        /* 슬라이더 영역 */
+        .swiper { width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; }
         .swiper-slide img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* 입력창 디자인 (이미지 위에 띄우기) */
-        #input-container {
-            position: fixed; bottom: 20px; left: 20px; z-index: 1000;
-            display: flex; gap: 5px; background: rgba(255, 255, 255, 0.8);
-            padding: 10px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        /* 하단 질문 입력창 */
+        #chat-box {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            z-index: 9999; display: flex; gap: 10px;
+            background: rgba(255, 255, 255, 0.85); padding: 12px;
+            border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            width: 85%; max-width: 450px; backdrop-filter: blur(5px);
         }
-        input { border: 1px solid #ccc; padding: 8px; border-radius: 5px; width: 200px; }
-        button { background: #007aff; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; }
+        #chat-box input {
+            flex: 1; border: 1px solid #ccc; padding: 10px; border-radius: 6px; outline: none;
+        }
+        #chat-box button {
+            background: #007aff; color: white; border: none; padding: 10px 20px;
+            border-radius: 6px; cursor: pointer; font-weight: bold;
+        }
 
-        /* 버튜버 위젯 위치 조정 (오른쪽 하단 고정) */
-        #live2d-widget { pointer-events: none; } /* 클릭이 이미지를 통과하도록 설정 */
+        /* 버튜버 위젯이 클릭을 방해하지 않도록 설정 */
+        #live2d-widget { pointer-events: none !important; }
     </style>
 </head>
 <body>
 
     <div class="swiper">
         <div class="swiper-wrapper">
-            <div class="swiper-slide"><img src="https://via.placeholder.com/800x600?text=협연+사진"></div>
-            <div class="swiper-slide"><img src="https://via.placeholder.com/800x600?text=학생회+활동"></div>
-            <div class="swiper-slide"><img src="https://via.placeholder.com/800x600?text=IT+프로젝트"></div>
+            <div class="swiper-slide"><img src="https://via.placeholder.com/800x1200?text=사진1:+서울대+공연"></div>
+            <div class="swiper-slide"><img src="https://via.placeholder.com/800x1200?text=사진2:+학생회+활동"></div>
+            <div class="swiper-slide"><img src="https://via.placeholder.com/800x1200?text=사진3:+IT+프로젝트"></div>
         </div>
-        <div class="swiper-pagination"></div>
         <div class="swiper-button-next"></div>
         <div class="swiper-button-prev"></div>
+        <div class="swiper-pagination"></div>
     </div>
 
-    <div id="input-container">
-        <input type="text" id="user-input" placeholder="휘찬에게 물어보세요!">
-        <button onclick="handleQuestion()">질문</button>
+    <div id="chat-box">
+        <input type="text" id="userInput" placeholder="휘찬님에 대해 물어보세요!" onkeypress="if(event.keyCode==13) askAi()">
+        <button onclick="askAi()">질문</button>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/live2d-widget@3.1.4/lib/L2Dwidget.min.js"></script>
 
     <script>
-        // 1. 각 슬라이드별 설명 데이터
-        const explanations = [
-            "🎻 이건 제가 서울대 음대 기악과에서 협연하던 사진이에요!",
-            "💻 학생회 사무부국장으로서 업체들을 관리하던 경험입니다.",
-            "🚀 음악과 IT를 결합하여 만든 제 첫 프로젝트 결과물이에요."
+        // [데이터] 사진별 설명 문구
+        const infoPerSlide = [
+            "🎻 서울대학교 음악대학 기악과에서 협연하던 소중한 순간이에요!",
+            "💼 음대 학생회 사무부국장으로서 행정 체계를 혁신했던 경험입니다.",
+            "💻 음악적 감각에 IT 기술을 더해 만든 저만의 포트폴리오 프로젝트예요."
         ];
 
-        // 2. 버튜버 초기화
+        // [초기화] 버튜버 설정
         L2Dwidget.init({
             "model": { "jsonPath": "https://cdn.jsdelivr.net/gh/evrstr/live2d-widget-models/live2d_evrstr/koharu/model.json" },
-            "display": { "position": "right", "width": 150, "height": 300, "hOffset": 20, "vOffset": -20 },
+            "display": { "position": "right", "width": 170, "height": 340, "hOffset": 10, "vOffset": 0 },
             "mobile": { "show": true, "scale": 0.5 },
             "dialog": { "enable": true }
         });
 
-        // 3. 슬라이더 초기화
+        // [초기화] 슬라이더 설정 및 도슨트 연동
         const swiper = new Swiper('.swiper', {
             loop: true,
-            pagination: { el: '.swiper-pagination' },
             navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+            pagination: { el: '.swiper-pagination', clickable: true },
             on: {
-                // 슬라이드가 바뀔 때마다 버튜버가 말함
                 slideChangeTransitionEnd: function () {
-                    const realIndex = this.realIndex;
-                    L2Dwidget.showTextMessage(explanations[realIndex], 4000);
+                    // 사진이 바뀔 때마다 버튜버가 설명함
+                    L2Dwidget.showTextMessage(infoPerSlide[this.realIndex], 4000);
                 }
             }
         });
 
-        // 4. 질문 처리 (간이 버전)
-        function handleQuestion() {
-            const query = document.getElementById('user-input').value;
-            if(query.includes("대학교")) {
-                L2Dwidget.showTextMessage("휘찬님은 서울대학교 음악대학 기악과 소속입니다!", 4000);
-            } else if(query.includes("전공")) {
-                L2Dwidget.showTextMessage("전공은 현악이며, 현재 IT 기술도 함께 공부하고 있어요.", 4000);
+        // [기능] 질문 답변 처리 (키워드 대응)
+        function askAi() {
+            const input = document.getElementById('userInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            if (text.includes("대학") || text.includes("학교")) {
+                L2Dwidget.showTextMessage("윤휘찬님은 **서울대학교 음악대학**에서 기악을 전공하고 있습니다! 🎓", 5000);
+            } else if (text.includes("전공") || text.includes("악기")) {
+                L2Dwidget.showTextMessage("현재 **현악** 전공이며, 음악과 기술을 잇는 아티스트를 꿈꾸고 있어요. 🎻", 5000);
+            } else if (text.includes("학생회") || text.includes("부국장")) {
+                L2Dwidget.showTextMessage("음대 학생회 **사무부국장**으로서 노션을 활용해 제휴 관리를 체계화했습니다! 💼", 5000);
+            } else if (text.includes("안녕")) {
+                L2Dwidget.showTextMessage("반가워요! 휘찬님의 포트폴리오를 안내해 드리는 AI 비서입니다. 😊", 4000);
             } else {
-                L2Dwidget.showTextMessage("그 부분은 아직 학습 중이에요. 다른 걸 물어봐주세요!", 3000);
+                L2Dwidget.showTextMessage(`'${text}'에 대해 더 궁금하시다면 휘찬님께 직접 연락해 보세요!`, 4000);
             }
+            input.value = ""; // 입력창 비우기
         }
+
+        // 시작 멘트
+        window.onload = () => {
+            setTimeout(() => L2Dwidget.showTextMessage("안녕하세요! 사진을 넘기거나 저에게 질문을 해보세요!", 4000), 2000);
+        };
     </script>
 </body>
 </html>
