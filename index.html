@@ -2,88 +2,145 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>이채원B 알아도 제대로 알자 !</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>이채원B 알아도 제대로 알자!</title>
     <style>
+        /* 기본 설정 (흰색 배경) */
         body, html { 
             margin: 0; padding: 0; width: 100%; height: 100%; 
             background-color: #ffffff; 
-            font-family: 'Pretendard', sans-serif; 
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif; 
             overflow: hidden;
+            -webkit-text-size-adjust: 100%; /* iOS 폰트 크기 자동 조절 방지 */
         }
         
-        /* 1. 거대 타이틀 중앙 배치 */
+        /* 1. 타이틀 (기본: 데스크탑) */
         #main-title {
             position: fixed;
-            top: 40%; 
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 64px; 
+            top: 50px; left: 50%;
+            transform: translateX(-50%);
+            font-size: 56px; 
             font-weight: 900;
             color: #000;
             text-align: center;
             width: 90%;
-            letter-spacing: -3px;
-            z-index: 1;
+            letter-spacing: -2px;
+            z-index: 10;
             pointer-events: none;
         }
 
-        /* 2. 하단 입력창 */
+        /* 2. 입력창 (하단 고정) */
         #chat-container {
-            position: fixed; bottom: 50px; left: 50%; transform: translateX(-50%);
-            z-index: 9999; display: flex; width: 85%; max-width: 600px;
-            background: #f1f1f1; padding: 15px 25px; border-radius: 50px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            position: fixed; bottom: 20px; left: 50%; 
+            transform: translateX(-50%);
+            z-index: 9999; display: flex; width: 90%; max-width: 500px;
+            background: #f4f4f4; padding: 12px 20px; border-radius: 50px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1); border: 1px solid #ddd;
         }
         
-        #userInput { flex: 1; border: none; outline: none; font-size: 18px; padding: 5px 10px; background: transparent; color: #111; }
-        #sendBtn { border: none; background: #000; color: white; padding: 10px 25px; border-radius: 30px; cursor: pointer; font-weight: bold; }
+        #userInput { flex: 1; border: none; outline: none; font-size: 16px; padding: 5px 10px; background: transparent; color: #111; }
+        #sendBtn { border: none; background: #000; color: white; padding: 8px 20px; border-radius: 30px; cursor: pointer; font-weight: bold; font-size: 14px; }
 
-        /* 3. 말풍선 위치 조정 (버튜버 옆으로 이동) */
+        /* 3. 버튜버 위젯 (기본: 데스크탑 우측) */
+        #live2d-widget {
+            position: fixed !important;
+            right: 30px !important;
+            bottom: -20px !important;
+            z-index: 999998 !important;
+        }
+
+        /* 4. 말풍선 (기본: 데스크탑 캐릭터 왼쪽) */
         .live2d-widget-dialog-container { 
             position: fixed !important; 
-            /* 버튜버의 왼쪽으로 보내기 위해 우측 여백을 대폭 늘림 */
-            right: 320px !important; 
+            right: 320px !important; /* 캐릭터 왼쪽 여백 */
             bottom: 250px !important; 
             z-index: 999999 !important; 
         }
         .live2d-widget-dialog {
             background: #fff !important; 
             border: 3px solid #000 !important; 
-            border-radius: 35px !important; 
-            padding: 25px 30px !important; 
-            font-size: 18px !important; 
+            border-radius: 30px !important; 
+            padding: 20px 25px !important; 
+            font-size: 17px !important; 
             font-weight: 600 !important;
             color: #111 !important; 
             line-height: 1.6 !important; 
             box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
-            /* 자동 너비 조절 및 정렬 */
+            /* 자동 너비 조절 */
             width: auto !important; 
-            min-width: 200px !important; 
+            min-width: 180px !important; 
             max-width: 450px !important;
             height: auto !important; 
             text-align: left !important; 
             opacity: 0; 
             transition: opacity 0.3s;
         }
+
+        /* =========================================
+           📱 모바일 환경 최적화 (@media)
+           ========================================= */
+        @media screen and (max-width: 768px) {
+            /* 1. 모바일 타이틀 (크기 축소) */
+            #main-title {
+                font-size: 32px; /* 대폭 축소 */
+                top: 30px;
+                letter-spacing: -1px;
+            }
+
+            /* 2. 모바일 입력창 (패딩 조정) */
+            #chat-container {
+                padding: 10px 15px;
+                width: 85%;
+            }
+            #userInput { font-size: 14px; }
+            #sendBtn { padding: 6px 15px; font-size: 12px; }
+
+            /* 3. 모바일 버튜버 (중앙 하단, 입력창 위) */
+            #live2d-widget {
+                right: auto !important;
+                left: 50% !important;
+                transform: translateX(-50%) !important; /* 중앙 정렬 */
+                bottom: 120px !important; /* 입력창 위 */
+                width: 180px !important; /* 크기 약간 축소 */
+                height: 360px !important;
+            }
+
+            /* 4. 모바일 말풍선 (캐릭터 위 중앙) */
+            .live2d-widget-dialog-container { 
+                right: auto !important;
+                left: 50% !important;
+                transform: translateX(-50%) !important; /* 중앙 정렬 */
+                bottom: 300px !important; /* 캐릭터 위 */
+                width: 85% !important; /* 화면 가득 채우기 */
+                max-width: none !important;
+            }
+            .live2d-widget-dialog {
+                border-radius: 25px !important; 
+                padding: 15px 20px !important; 
+                font-size: 16px !important; /* 텍스트 크기 약간 축소 */
+                max-width: none !important;
+                text-align: center !important; /* 텍스트 중앙 정렬 */
+            }
+        }
     </style>
 </head>
 <body>
 
-    <h1 id="main-title">이채원B 알아도 제대로 알자 !</h1>
+    <h1 id="main-title">이채원B 알아도 제대로 알자!</h1>
 
     <div id="chat-container">
-        <input type="text" id="userInput" placeholder="MBTI, 전공, 습관, 강령 등을 물어보세요!" autocomplete="off" />
+        <input type="text" id="userInput" placeholder="찬양하라 이채원을!" autocomplete="off" />
         <button id="sendBtn">확인</button>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/live2d-widget@3.1.4/lib/L2Dwidget.min.js"></script>
 
     <script>
-        // 버튜버 초기화 (오른쪽 하단 고정)
+        // 버튜버 초기화
         L2Dwidget.init({
             "model": { "jsonPath": "https://cdn.jsdelivr.net/gh/evrstr/live2d-widget-models/live2d_evrstr/koharu/model.json" },
-            "display": { "position": "right", "width": 280, "height": 550, "hOffset": 30, "vOffset": -20 },
+            "display": { "position": "right", "width": 250, "height": 500, "hOffset": 30, "vOffset": -20 },
+            "mobile": { "show": true, "scale": 0.8 }, /* 모바일에서 위젯 자체 스케일 조정 */
             "dialog": { "enable": true }
         });
 
@@ -97,33 +154,33 @@
             }
         }
 
-        // 보고서 TXT 데이터 완전 추출 데이터베이스 (출처 표시 제거)
+        // [cite 제거 완료] 보고서 TXT 데이터베이스
         const chaewonDB = [
-            { keys: ["이름", "성함", "누구"], value: "채one이라서 숫자 1을 좋아하며, 동명이인에 대한 PTSD가 있어 세상에 존재하지 않았던 이름을 찾아내 개명하고 싶어 하는 '이채원'입니다." },
-            { keys: ["mbti", "엠비티아이"], value: "확신의 INTP입니다. 본인 말로는 '제발 그렇다면 그런 줄 알아'라고 할 정도로 다른 유형은 절대 안 나온다고 하네요." },
-            { keys: ["전공", "바이올린", "악기"], value: "바이올린을 전공하고 있습니다. 클래식을 안 좋아하는데 자신을 갈아서 전공할 이유가 없다며 진심을 다하고 있죠. 하지만 마음 한구석엔 베이스를 배워 밴드를 하고 싶은 꿈도 있습니다." },
+            { keys: ["이름", "성함", "누구"], value: "채one이라서 숫자 1을 좋아하는 '이채원'입니다. 동명이인 PTSD 때문에 세상에 없던 이름으로 개명하고 싶어 하기도 하죠." },
+            { keys: ["MBTI", "엠비티아이"], value: "확신의 INTP입니다. 본인 말로는 '제발 그렇다면 그런 줄 알아'라고 하실 정도로 다른 유형은 전혀 안 나온다고 하네요." },
+            { keys: ["전공", "바이올린", "악기"], value: "바이올린을 전공하고 있습니다. 클래식을 안 좋아하는데 자신을 갈아서 전공할 이유가 없다며 애정이 깊어요. 하지만 베이스를 배워 밴드를 하고 싶은 꿈도 있습니다." },
             { keys: ["별명", "호칭"], value: "씨노브, 채노브, 노브, 노브라, 이채노브스키 등 독특한 별명이 많고, 스스로를 '정병걸린 은둔자'라고 부르기도 합니다." },
-            { keys: ["좌우명", "기세"], value: "인생은 기세다! 그리고 '뻔당기(뻔뻔하고 당당하고 기막히게)'라는 말을 가슴에 새기고 삽니다." },
-            { keys: ["강령", "준칙", "습관"], value: "일상의 난이도를 낮추기 위한 15가지 강령이 있습니다. 기상 후 음악 틀기, 어깨 펴고 걷기, 대중교통에서 외부와 단절하기, 30분 홈트 등이 포함됩니다." },
-            { keys: ["음식", "먹는거", "맛집"], value: "회, 산낙지, 내장 요리, 삼겹살(특히 비계 부분), 빵, 떡, 치즈 등 못 먹는 게 거의 없습니다. 닭보다 달걀이 먼저라고 믿는 달걀파이기도 하죠." },
-            { keys: ["고수", "편식"], value: "유일하게 못 먹는 음식은 고수입니다. 고수 혐오자라고 보셔도 돼요." },
-            { keys: ["수박", "여름"], value: "냉장고에 예쁘게 잘린 수박만 있다면 어떤 시련도 이겨낼 수 있는 강한 사람입니다." },
+            { keys: ["좌우명", "기세"], value: "좌우명은 '인생은 기세다'이며, '뻔당기(뻔뻔하고 당당하고 기막히게)'라는 글귀를 가슴에 새기고 삽니다." },
+            { keys: ["강령", "준칙", "습관"], value: "일상의 난이도를 낮추기 위한 15가지 강령이 있습니다. 기상 후 음악 틀기, 어깨 펴고 걷기, 대중교통에서 외부 단절하기 등이 핵심입니다." },
+            { keys: ["음식", "먹는거", "맛집"], value: "회, 산낙지, 내장 요리(곱창 등), 양고기, 삼겹살, 빵, 떡, 치즈 등 못 먹는 게 거의 없습니다. 닭보다 달걀이 먼저라고 믿는 달걀파이기도 하죠." },
+            { keys: ["고수", "편식"], value: "유일하게 못 먹는 음식은 고수입니다. 고수 혐오자 수준입니다." },
+            { keys: ["수박", "강함"], value: "냉장고에 예쁘게 잘린 수박만 있다면 어떤 시련도 이겨낼 수 있는 강한 사람입니다." },
             { keys: ["공차", "밀크티"], value: "블랙밀크티에 펄 추가, 당도 30, 얼음 적게! 채원님을 만나러 갈 때 꼭 기억해야 할 레시피입니다." },
-            { keys: ["음악", "실리카겔", "혁오"], value: "음악 도입부의 '냄새'를 중요하게 생각합니다. 실리카겔의 앨범은 100번 이상 정주행했고, 최근엔 혁오의 앨범도 깊게 파고 있습니다." },
-            { keys: ["가수", "노래"], value: "황소윤, 김한주, 이승윤을 좋아합니다. 가사보다는 전체적인 사운드와 멜로디에 먼저 반응하는 편이죠." },
+            { keys: ["음악", "노래", "실리카겔", "혁오"], value: "음악 도입부의 '냄새'를 중요하게 생각합니다. 실리카겔의 앨범은 100번 이상 정주행했고, 최근엔 혁오의 앨범도 깊게 파고 있습니다." },
+            { keys: ["가사", "노랫말", "문학"], value: "노랫말을 '지극히 일상적이면서도 섬세한 문학'으로 여깁니다. 말이나 글로 설득하려 애쓰지 않아도 파고드는 그 공백을 좋아하죠." },
             { keys: ["책", "작가", "도서"], value: "헤르만 헤세(데미안, 황야의 이리), 서머싯 몸(달과 6펜스)을 좋아하며 작가 이석원과 양안다의 작품도 인상 깊게 읽습니다." },
             { keys: ["영화", "배우"], value: "'콜 미 바이 유어 네임', '본 투 비 블루', '릴리 슈슈의 모든 것'을 좋아하며 배우 조정석, 남주혁, 베네딕트 컴버배치의 팬입니다." },
             { keys: ["목표", "꿈", "미래"], value: "건강하게 살다가 너무 아프지 않게 죽는 것, 그리고 미래의 배우자와 행복한 노후를 보내는 것이 최종 목표입니다." },
             { keys: ["환생", "고양이"], value: "다시 태어난다면 부잣집 반려묘가 되고 싶어 합니다. 사람으로 태어나는 것은 이제 사양하고 싶대요." },
             { keys: ["사랑", "연애", "결혼"], value: "사랑에 진심이며 '결혼 잘 하기'를 인생의 중요한 소원으로 꼽습니다. 평생 사랑할 수 있는 단 한 사람을 찾는 중입니다." },
             { keys: ["성격", "예민"], value: "스스로 '예민보스'라고 하지만 겉과 속이 같고 허세 없는 높은 자존감을 가진 성격을 추구합니다." },
-            { keys: ["창업", "아이디어"], value: "음대생들을 위해 음악을 인식해서 자동으로 악보를 넘겨주는 장치를 만들어보고 싶어 합니다." },
+            { keys: ["창업", "아이디어"], value: "음대생들을 위해 음악을 인식해서 자동으로 악보를 넘겨주는 장치를 아이템으로 생각한 적이 있습니다." },
             { keys: ["고독", "방황", "진실"], value: "인류는 태초부터 방황하는 존재라 믿으며, 고독의 심연을 탐구하는 것을 즐깁니다. '내가 믿는 것이 진실'이라는 태도로 세상을 살아가려 하죠." },
             { keys: ["취미", "특기"], value: "취미는 침대에서 누워있기이고, 특기는 팔이 길어서 남들보다 훨씬 잘 찍는 광각샷입니다." },
             { keys: ["피크민", "게임"], value: "요즘은 75마리의 하찮은 피크민들과 함께 심신의 안정을 찾고 있습니다." },
             { keys: ["향", "냄새"], value: "베리향, 로즈향, 우디향을 좋아하지만 본인이 직접 맡아서 확인해야 직성이 풀리는 스타일입니다." },
             { keys: ["날씨", "계절"], value: "겨울에 태어나 겨울을 가장 좋아하며, 겉옷이 필요 없는 선선하고 살짝 흐린 날씨를 선호합니다." },
-            { keys: ["번후", "연락처", "전화"], value: "번호는 비밀이지만, 본인은 '나를 많이 감추는 편'이라고 말하니 조심스럽게 다가가 보세요!" }
+            { keys: ["번호", "연락처", "전화"], value: "번호는 비밀이지만, 본인은 '나를 많이 감추는 편'이라고 말하니 조심스럽게 다가가 보세요!" }
         ];
 
         function handleQuestion() {
@@ -131,7 +188,7 @@
             const msg = input.value.trim().toLowerCase();
             if (!msg) return;
 
-            let reply = "보고서 데이터를 전부 확인해봤지만 그 내용은 없네요! '전공', '음식', '강령', '성격' 등을 물어봐 주세요.";
+            let reply = "보고서의 222개 답변과 일기 내에서 해당 내용을 찾지 못했어요. 키워드를 다르게 입력해 보세요! (예: 강령, 음식, MBTI, 성격)";
 
             for (let i = 0; i < chaewonDB.length; i++) {
                 const item = chaewonDB[i];
