@@ -3,164 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>휘찬의 AI 포트폴리오</title>
-    
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-    
+    <title>이채원B 알아도 제대로 알자 !</title>
     <style>
-        /* 기본 설정 */
-        * { box-sizing: border-box; }
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: 'Pretendard', -apple-system, sans-serif; background-color: #000; }
+        body, html { 
+            margin: 0; padding: 0; width: 100%; height: 100%; 
+            overflow: hidden; background-color: #ffffff; 
+            font-family: 'Pretendard', sans-serif; 
+        }
+        
+        #main-title {
+            position: fixed; top: 40px; left: 50%; transform: translateX(-50%);
+            font-size: 50px; font-weight: 900; color: #000; z-index: 100; 
+            text-align: center; width: 100%; letter-spacing: -2px;
+        }
 
-        /* 1. 배경 슬라이더 (가장 뒤: z-index 1) */
-        .swiper { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; }
-        .swiper-slide img { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.5); }
-
-        /* 2. 질문 입력창 (가장 앞: z-index 99999) */
         #chat-container {
-            position: fixed;
-            bottom: 40px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 90%;
-            max-width: 500px;
-            z-index: 99999; /* 어떤 요소보다 위에 표시 */
-            display: flex;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 8px 15px;
-            border-radius: 50px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            backdrop-filter: blur(10px);
+            position: fixed; bottom: 50px; left: 50%; transform: translateX(-50%);
+            z-index: 999999999; display: flex; width: 80%; max-width: 550px;
+            background: #f1f1f1; padding: 15px 25px; border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
+        
+        #userInput { flex: 1; border: none; outline: none; font-size: 18px; padding: 5px 10px; background: transparent; color: #111; }
+        #sendBtn { border: none; background: #000; color: white; padding: 10px 25px; border-radius: 30px; cursor: pointer; font-weight: bold; }
 
-        #userInput {
-            flex: 1;
-            border: none;
-            outline: none;
-            background: transparent;
-            font-size: 16px;
-            padding: 10px;
-            color: #333;
+        .live2d-widget-dialog-container { position: fixed !important; right: 40px !important; bottom: 350px !important; z-index: 999999 !important; }
+        .live2d-widget-dialog {
+            background: #fff !important; border: 3px solid #000 !important; border-radius: 35px !important; 
+            padding: 25px 30px !important; font-size: 17px !important; font-weight: 600 !important;
+            color: #111 !important; line-height: 1.6 !important; box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+            width: fit-content !important; min-width: 200px !important; max-width: 400px !important;
         }
-
-        #sendBtn {
-            background: #222;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 30px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: 0.2s;
-            white-space: nowrap;
-        }
-
-        #sendBtn:hover { background: #555; }
-
-        /* 3. 버튜버 위젯 설정 */
-        /* 위젯 전체가 클릭을 막지 않도록 설정하되, 대화창만 클릭 가능하게 함 */
-        #live2d-widget { pointer-events: none !important; }
-        .live2d-widget-dialog-container { pointer-events: auto !important; }
     </style>
 </head>
 <body>
 
-    <div class="swiper">
-        <div class="swiper-wrapper">
-            <div class="swiper-slide"><img src="https://via.placeholder.com/1080x1920?text=서울대+음대+공연+사진"></div>
-            <div class="swiper-slide"><img src="https://via.placeholder.com/1080x1920?text=학생회+활동+사진"></div>
-            <div class="swiper-slide"><img src="https://via.placeholder.com/1080x1920?text=IT+프로젝트+사진"></div>
-        </div>
-        <div class="swiper-button-next" style="color: white;"></div>
-        <div class="swiper-button-prev" style="color: white;"></div>
-    </div>
+    <h1 id="main-title">이채원B 알아도 제대로 알자 !</h1>
 
     <div id="chat-container">
-        <input type="text" id="userInput" placeholder="휘찬님에 대해 물어보세요!" autocomplete="off">
+        <input type="text" id="userInput" placeholder="궁금한 키워드를 입력하세요 (예: 강령, 취향, 가사, 전공)" autocomplete="off" />
         <button id="sendBtn">질문</button>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/live2d-widget@3.1.4/lib/L2Dwidget.min.js"></script>
 
     <script>
-        /**
-         * 1. 버튜버(Live2D) 초기화
-         */
         L2Dwidget.init({
             "model": { "jsonPath": "https://cdn.jsdelivr.net/gh/evrstr/live2d-widget-models/live2d_evrstr/koharu/model.json" },
-            "display": { "position": "right", "width": 180, "height": 360, "hOffset": 10, "vOffset": 0 },
-            "mobile": { "show": true },
-            "dialog": { 
-                "enable": true,
-                "script": {
-                    'every idle 10s': '궁금한 게 있으면 아래에 입력해 줘!',
-                    'tap body': '앗! 왜 때려!',
-                    'tap face': '헤헤, 간지러워.'
-                }
-            }
+            "display": { "position": "right", "width": 250, "height": 500, "hOffset": 30, "vOffset": 0 },
+            "dialog": { "enable": true }
         });
 
-        /**
-         * 2. 슬라이더 초기화
-         */
-        const swiperDescriptions = [
-            "🎻 서울대학교 음악대학 기악과 공연 장면이에요!",
-            "💼 음대 학생회 사무부국장으로 열일 중!",
-            "💻 음악과 기술을 잇는 IT 프로젝트입니다!"
-        ];
-
-        const swiper = new Swiper('.swiper', {
-            loop: true,
-            navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
-            on: {
-                slideChangeTransitionEnd: function() {
-                    // 슬라이드 변경 시 버튜버가 설명해줌
-                    const msg = swiperDescriptions[this.realIndex];
-                    if(window.L2Dwidget) L2Dwidget.showTextMessage(msg, 4000);
-                }
+        function botSay(text) {
+            const dialogBox = document.querySelector('.live2d-widget-dialog');
+            if (dialogBox) {
+                dialogBox.innerHTML = text.replace(/\n/g, '<br>');
+                dialogBox.style.opacity = 1;
+            } else {
+                setTimeout(() => botSay(text), 500);
             }
-        });
-
-        /**
-         * 3. 핵심 질문 로직
-         */
-        const inputField = document.getElementById('userInput');
-        const sendButton = document.getElementById('sendBtn');
-
-        function processQuestion() {
-            const question = inputField.value.trim();
-            if (!question) return;
-
-            let answer = `'${question}'이라... 그건 잘 모르겠지만, 휘찬님은 아주 멋진 분이에요!`;
-
-            // 키워드별 답변 설정
-            if (question.includes("대학") || question.includes("학교") || question.includes("서울대")) {
-                answer = "윤휘찬님은 **서울대학교 음악대학**에서 꿈을 펼치고 계십니다! 🎓";
-            } else if (question.includes("전공") || question.includes("악기") || question.includes("음악")) {
-                answer = "휘찬님은 **현악 전공**으로 아주 섬세하고 아름다운 연주를 하시죠! 🎻";
-            } else if (question.includes("학생회") || question.includes("직책")) {
-                answer = "음대 학생회 **사무부국장**으로서 행정 업무도 완벽하게 해내신답니다! 💼";
-            } else if (question.includes("안녕") || question.includes("반가워")) {
-                answer = "안녕하세요! 휘찬님의 포트폴리오에 오신 것을 환영해요! 😊";
-            }
-
-            // 버튜버 말풍선에 출력
-            L2Dwidget.showTextMessage(answer, 5000);
-            
-            // 입력창 비우기
-            inputField.value = "";
         }
 
-        // 클릭 이벤트
-        sendButton.addEventListener('click', processQuestion);
+        // 텍스트 파일 데이터 완전 추출 DB
+        const chaewonDB = {
+            "MBTI": "INTP입니다. '이거 말고는 아무것도 안 나오니까 제발 그렇다면 그런 줄 알아'라고 강조하시네요[cite: 68].",
+            "전공": "바이올린을 전공하고 있습니다. '안 좋아하는데 나를 갈아서 전공할 이유가 없다'고 할 만큼 애정이 깊어요[cite: 32, 62, 108].",
+            "별명": "씨노브, 채노브, 노브, 노브라, 이채노브스키 등이 있고, 스스로를 '정병걸린 은둔자'라고 부르기도 합니다[cite: 83, 148].",
+            "이름": "채one이라서 숫자 1을 좋아하며, 동명이인에 대한 PTSD가 있어 세상에 없던 이름으로 개명하고 싶어 합니다[cite: 30, 70].",
+            "음식": "회, 산낙지, 내장 요리, 양고기, 삼겹살, 빵, 떡, 치즈 등 안 좋아하는 걸 적는 게 빠를 정도로 다 잘 먹습니다.",
+            "고수": "유일하게 못 먹는 음식은 '고수'입니다[cite: 101, 147].",
+            "공차": "블랙밀크티에 펄 추가, 당도 30, 얼음 적게 해서 드시는 게 정석입니다.",
+            "커피": "아인슈페너류를 좋아하며, 프리퍼의 '멜라 크레마' 크림 맛을 예술이라고 평가하셨어요[cite: 12].",
+            "음악": "클래식 전공이지만 얼터너티브 락, 재즈, 인디, 로파이 등 잡식성입니다. 도입부의 '냄새'가 중요하다고 해요[cite: 8, 32].",
+            "실리카겔": "'Power Andre 99' 앨범은 100번 넘게 정주행했고, 오늘 고마웠던 존재로 'Kyo181'을 꼽았습니다.",
+            "가수": "황소윤, 김한주, 이승윤을 좋아합니다.",
+            "배우": "베네딕트 컴버배치, 남주혁, 조정석을 좋아합니다.",
+            "가사": "평소 멜로디와 사운드를 먼저 듣지만, 노랫말이라는 지극히 일상적인 문학 장르도 참 좋아합니다[cite: 8, 57].",
+            "책": "데미안, 황야의 이리, 달과 6펜스, 코스모스, 도시와 그 불확실한 벽 등을 좋아합니다[cite: 28].",
+            "영화": "콜 미 바이 유어 네임, 본 투 비 블루, 릴리 슈슈의 모든 것, 마이 블루베리 나이츠 등을 좋아합니다.",
+            "드라마": "드라마 '스물다섯 스물하나'를 좋아합니다[cite: 42].",
+            "브랜드": "추구미는 niceghostclub이고, 접근성이 좋아 Zara 옷을 가장 많이 입습니다[cite: 45].",
+            "취향": "베리, 로즈, 우디향을 좋아하고 색깔은 블랙핑크, 게임은 피크민을 즐깁니다[cite: 29, 32, 40].",
+            "성격": "예민보스지만 겉과 속이 같고 허세 없는 높은 자존감을 가진 성격을 좋아합니다[cite: 30, 53].",
+            "좌우명": "'인생은 기세다'가 좌우명이고, '뻔당기(뻔뻔, 당당, 기막히게)'라는 글귀를 좋아합니다[cite: 36, 64].",
+            "목표": "건강하게 살다가 투병 없이 너무 아프지 않게 죽는 것이 최종 목표입니다[cite: 66].",
+            "환생": "부잣집 반려묘로 태어나고 싶어 하십니다[cite: 49].",
+            "결혼": "사랑과 우정 중 사랑을 택하며, '결혼 잘 하기'가 소원이자 중요한 목표입니다[cite: 56, 87, 119].",
+            "강령": "기상 후 음악 틀기, 어깨 펴기, 대중교통에서 집중하기 등 15가지 '상황별 행동 강령'을 지키며 삶의 난이도를 낮춥니다 .",
+            "행동강령": "15가지 준칙이 있습니다. 예컨대 '격하게 아무것도 하기 싫을 땐 미련 없이 내려놓기' 같은 것들이죠[cite: 193].",
+            "일기": "방황과 고독, 감정과 이성에 대해 깊이 고민하며 '내가 믿는 것이 진실'이라고 생각하기로 했습니다[cite: 6, 154].",
+            "고독": "고독의 끝을 탐구하며, 자신의 이야기를 나만이 간직하는 편이 낫겠다고 생각하기도 합니다.",
+            "더위": "더위에 굴복해 늘어지기도 하지만, 냉장고의 수박만 있다면 강해질 수 있습니다.",
+            "창업": "음악에 맞춰 악보를 저절로 넘겨주는 AI 악보 인식기를 아이템으로 생각한 적이 있습니다[cite: 168].",
+            "후회": "지나간 일을 곱씹는 것은 쓸데없다고 느껴 최대한 후회하지 않으려 노력합니다[cite: 100].",
+            "사랑": "사랑에는 최선을 다해야 한다고 믿으며, 평생 사랑할 수 있는 한 사람을 찾는 중입니다[cite: 76, 122].",
+            "비밀": "남들은 나에 대해 잘 모를 것이라고 생각하며, 나를 많이 감추는 편입니다[cite: 89, 104]."
+        };
 
-        // 엔터키 이벤트
-        inputField.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                processQuestion();
+        function handleQuestion() {
+            const input = document.getElementById('userInput');
+            const msg = input.value.trim();
+            if (!msg) return;
+
+            let reply = "보고서의 222개 답변과 일기 데이터 내에서 해당 내용을 찾지 못했어요. '성격', '취향', '가사', '강령' 등을 입력해 보세요!";
+
+            for (let key in chaewonDB) {
+                if (msg.includes(key)) {
+                    reply = chaewonDB[key];
+                    break;
+                }
             }
-        });
+
+            botSay(reply);
+            input.value = "";
+        }
+
+        document.getElementById('sendBtn').onclick = handleQuestion;
+        document.getElementById('userInput').onkeydown = (e) => { if (e.key === 'Enter') handleQuestion(); };
     </script>
 </body>
 </html>
